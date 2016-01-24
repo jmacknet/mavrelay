@@ -16,7 +16,7 @@
 char serial_name[] = "/dev/ttyUSB0";
 unsigned int serial_baud = 57600;
 
-char udp_dest[] = "192.168.40.255";
+char udp_dest[] = "192.168.1.255";
 unsigned short udp_send_port = 14550;
 unsigned short udp_bind_port = 14555;
 
@@ -153,7 +153,6 @@ int main() {
 	
 	// UDP mavlink variables
 	int fd_udp;
-	struct sockaddr saddr;
 	struct sockaddr_in dest;
 	int saddr_len;
 	char udp_inbuf[BUF_SIZE];
@@ -208,13 +207,14 @@ int main() {
 	}
 	
 	// Setup destination address
-	memset(&saddr, 0, sizeof(dest));
+	memset(&dest, 0, sizeof(dest));
 	dest.sin_family = AF_INET;
 	dest.sin_port = htons(udp_send_port);
 	if ( inet_aton(udp_dest, &dest.sin_addr) == 0 ) {
 		perror("inet_aton failed");
 		return -1;
 	}
+	// Note that we set the UDP destination to a broadcast, this may be changed later if a specific client replies
 	
 	// Main loop
 	for (; !f_exit ;) {
@@ -243,17 +243,16 @@ int main() {
 						mav_len = mavlink_msg_to_send_buffer(ser_outbuf, &msg);
 						// UDP
 						udp_len = sendto(fd_udp, ser_outbuf, mav_len, 0, (struct sockaddr *) &dest, sizeof(dest));
+						//printf("Sent data to %s\n", inet_ntoa(dest.sin_addr));
 						if (udp_len < 0) {
 							perror("UDP send");
 						}
 						// TCP
 						if (fd_tcp_cli != -1) {
-							//printf("trying tcp\n");
 							tcp_len = send(fd_tcp_cli, ser_outbuf, mav_len, MSG_NOSIGNAL);
 							if (tcp_len < mav_len) {
 								perror("TCP write error");
 							}
-							//printf("sent tcp\n");
 						}
 						// Collect statistics for autopilot messages
 						if (msg.sysid == 1) { 
@@ -274,7 +273,8 @@ int main() {
 			}
 			// Handle UDP socket
 			if (FD_ISSET(fd_udp, &fdset)) {
-				udp_len = recvfrom(fd_udp, udp_inbuf, BUF_SIZE, 0, &saddr, &saddr_len);
+				// Note that we set the UDP destination to the last host we received data from
+				udp_len = recvfrom(fd_udp, udp_inbuf, BUF_SIZE, 0, (struct sockaddr *)&dest, &saddr_len);
 				write(fd_ser, udp_inbuf, udp_len);
 			}
 			// Handle TCP server socket
