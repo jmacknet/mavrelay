@@ -16,7 +16,7 @@
 char serial_name[] = "/dev/ttyUSB0";
 unsigned int serial_baud = 57600;
 
-char udp_dest[] = "192.168.1.255";
+char udp_dest[] = "192.168.40.255";
 unsigned short udp_send_port = 14550;
 unsigned short udp_bind_port = 14555;
 
