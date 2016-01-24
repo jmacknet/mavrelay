@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 
-#include "../mavlink/ardupilotmega/mavlink.h"
+#include "mavlink/ardupilotmega/mavlink.h"
 
 #define BUF_SIZE 1024
 
