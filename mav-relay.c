@@ -16,7 +16,7 @@
 char serial_name[] = "/dev/ttyUSB0";
 unsigned int serial_baud = 57600;
 
-char udp_dest[] = "192.168.40.255";
+char udp_dest[] = "192.168.61.255";
 unsigned short udp_send_port = 14550;
 unsigned short udp_bind_port = 14555;
 
@@ -231,7 +231,6 @@ int main() {
 		
 		// Select on input sources
 		retval = select(fd_max + 1, &fdset, NULL, NULL, &tv);
-		
 		// Handle ready files
 		if (retval > 0) {
 			// Handle serial port
@@ -293,6 +292,7 @@ int main() {
 				}
 			}
 			// Handle TCP client socket
+if (fd_tcp_cli != -1) {
 			if (FD_ISSET(fd_tcp_cli, &fdset)) {
 				tcp_len = read(fd_tcp_cli, tcp_inbuf, BUF_SIZE);
 				if (tcp_len == 0) {
@@ -305,6 +305,7 @@ int main() {
 					write(fd_ser, tcp_inbuf, tcp_len);
 				}					
 			}
+}
 		} else {
 			printf("select error: %i\n", retval);
 		}
