@@ -1,6 +1,7 @@
-PLATFORM=arm-openwrt-linux
-STAGING_DIR=/raid/Files/openwrt/pi2/staging_dir/toolchain-arm_cortex-a7+vfp_gcc-4.8-linaro_glibc-2.21_eabi
-TARGET_DIR=/raid/Files/openwrt/pi2/staging_dir/target-arm_cortex-a7+vfp_glibc-2.21_eabi
+PLATFORM=mipsel-openwrt-linux
+OPENWRT_DIR=/raid/Files/openwrt/vocore
+STAGING_DIR=$OPENWRT_DIR/staging_dir/toolchain-mipsel_24kec+dsp_gcc-4.8-linaro_uClibc-0.9.33.2
+TARGET_DIR=$OPENWRT_DIR/staging_dir/target-mipsel_24kec+dsp_uClibc-0.9.33.2
 export STAGING_DIR
 
 PATH=$PATH:$STAGING_DIR/bin

@@ -16,7 +16,7 @@
 char serial_name[] = "/dev/ttyUSB0";
 unsigned int serial_baud = 57600;
 
-char udp_dest[] = "192.168.61.255";
+char udp_dest[] = "192.168.40.255";
 unsigned short udp_send_port = 14550;
 unsigned short udp_bind_port = 14555;
 
@@ -153,7 +153,7 @@ int main() {
 	
 	// UDP mavlink variables
 	int fd_udp;
-	struct sockaddr_in dest;
+	struct sockaddr_in dest, bc_dest;
 	int saddr_len;
 	char udp_inbuf[BUF_SIZE];
 	socklen_t udp_len;
@@ -207,13 +207,14 @@ int main() {
 	}
 	
 	// Setup destination address
-	memset(&dest, 0, sizeof(dest));
-	dest.sin_family = AF_INET;
-	dest.sin_port = htons(udp_send_port);
-	if ( inet_aton(udp_dest, &dest.sin_addr) == 0 ) {
+	memset(&bc_dest, 0, sizeof(bc_dest));
+	bc_dest.sin_family = AF_INET;
+	bc_dest.sin_port = htons(udp_send_port);
+	if ( inet_aton(udp_dest, &bc_dest.sin_addr) == 0 ) {
 		perror("inet_aton failed");
 		return -1;
 	}
+	memcpy(&dest, &bc_dest, sizeof(dest));
 	// Note that we set the UDP destination to a broadcast, this may be changed later if a specific client replies
 	
 	// Main loop
@@ -241,6 +242,12 @@ int main() {
 						// Relay messages as needed
 						mav_len = mavlink_msg_to_send_buffer(ser_outbuf, &msg);
 						// UDP
+						if (msg.msgid == MAVLINK_MSG_ID_HEARTBEAT) {
+							udp_len = sendto(fd_udp, ser_outbuf, mav_len, 0, (struct sockaddr *) &bc_dest, sizeof(bc_dest));
+							if (udp_len < 0) {
+								perror("UDP send");
+							}
+						}
 						udp_len = sendto(fd_udp, ser_outbuf, mav_len, 0, (struct sockaddr *) &dest, sizeof(dest));
 						//printf("Sent data to %s\n", inet_ntoa(dest.sin_addr));
 						if (udp_len < 0) {
@@ -292,20 +299,20 @@ int main() {
 				}
 			}
 			// Handle TCP client socket
-if (fd_tcp_cli != -1) {
-			if (FD_ISSET(fd_tcp_cli, &fdset)) {
-				tcp_len = read(fd_tcp_cli, tcp_inbuf, BUF_SIZE);
-				if (tcp_len == 0) {
-					printf("TCP client disconnect\n");
-					close(fd_tcp_cli);
-					fd_tcp_cli = -1;
-				} else if (tcp_len < 0) {
-					perror("tcp read");
-				} else {
-					write(fd_ser, tcp_inbuf, tcp_len);
-				}					
+			if (fd_tcp_cli != -1) {
+				if (FD_ISSET(fd_tcp_cli, &fdset)) {
+					tcp_len = read(fd_tcp_cli, tcp_inbuf, BUF_SIZE);
+					if (tcp_len == 0) {
+						printf("TCP client disconnect\n");
+						close(fd_tcp_cli);
+						fd_tcp_cli = -1;
+					} else if (tcp_len < 0) {
+						perror("tcp read");
+					} else {
+						write(fd_ser, tcp_inbuf, tcp_len);
+					}					
+				}
 			}
-}
 		} else {
 			printf("select error: %i\n", retval);
 		}
