@@ -13,12 +13,25 @@
 
 #define BUF_SIZE 1024
 
+#ifdef VOCORE
+
+char serial_name[] = "/dev/ttyS1";
+unsigned int serial_baud = 57600;
+
+char udp_dest[] = "192.168.61.255";
+unsigned short udp_send_port = 14550;
+unsigned short udp_bind_port = 14555;
+
+#else
+
 char serial_name[] = "/dev/ttyUSB0";
 unsigned int serial_baud = 57600;
 
 char udp_dest[] = "192.168.40.255";
 unsigned short udp_send_port = 14550;
 unsigned short udp_bind_port = 14555;
+
+#endif
 
 unsigned short tcp_port = 14550;
 

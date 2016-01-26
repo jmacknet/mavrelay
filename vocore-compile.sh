@@ -7,5 +7,5 @@ export STAGING_DIR
 PATH=$PATH:$STAGING_DIR/bin
 export PATH
 
-make CC=$PLATFORM-gcc CFLAGS="-O3 -I$TARGET_DIR/include -I$TARGET_DIR/usr/include" LDFLAGS="-L$TARGET_DIR/usr/lib -L$TARGET_DIR/lib -Wl,-rpath -Wl,$TARGET_DIR/usr/lib -Wl,-rpath -Wl,$TARGET_DIR/lib"
+make CC=$PLATFORM-gcc CFLAGS="-O3 -I$TARGET_DIR/include -I$TARGET_DIR/usr/include -DVOCORE" LDFLAGS="-L$TARGET_DIR/usr/lib -L$TARGET_DIR/lib -Wl,-rpath -Wl,$TARGET_DIR/usr/lib -Wl,-rpath -Wl,$TARGET_DIR/lib"
 
